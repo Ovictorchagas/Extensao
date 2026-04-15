@@ -10,20 +10,23 @@
 ####################################
 # ETAPA 1: BANCO DE DADOS DO SINASC
 ####################################
+# -------------------------------------------------------------------------
+# TAREFAS 1, 2 e 3
+# -------------------------------------------------------------------------
 
-# Tarefa 1: Leitura (Ajuste o nome do arquivo .csv que você baixou do SUS)
+# Tarefa 1: Leitura do banco de dados
 dados_sinasc <- read.csv("SINASC_2015.csv", header = TRUE, sep = ";") 
-# Verificação: dim(dados_sinasc) deve ser 3017668 x 61
 
-# Tarefa 2: Redução de colunas
-colunas <- c(1, 4, 5, 6, 7, 12, 13, 14, 15, 19, 21, 22, 23, 24, 35, 38, 44, 46, 48, 59, 60, 61)
-dados_sinasc_1 <- dados_sinasc[, colunas]
+# Tarefa 2: Reduzir para as colunas indicadas
+colunas_selecionadas <- c(1, 4, 5, 6, 7, 12, 13, 14, 15, 19, 21, 22, 23, 24, 35, 38, 44, 46, 48, 59, 60, 61)
+dados_sinasc_1 <- dados_sinasc[, colunas_selecionadas]
 
-# Tarefa 3: Filtrar DF (Código 53)
-# Extraímos os 2 primeiros dígitos do código do município de residência
-dados_sinasc_2 <- subset(dados_sinasc_1, substr(CODMUNRES, 1, 2) == "53")
+# Tarefa 3: Filtrar os dados para o Distrito Federal (Código 53)
+# Extraímos os 2 primeiros dígitos do CODMUNRES para identificar a UF
+codigo_uf <- substr(as.character(dados_sinasc_1$CODMUNRES), 1, 2)
+dados_sinasc_2 <- subset(dados_sinasc_1, codigo_uf == "53")
 
-# Exportar CSV inicial da UF
+# Exportar o CSV da sua UF
 write.csv(dados_sinasc_2, "dados_sinasc_2.csv", row.names = FALSE)
 
 # Tarefa 4. Verificar em dados_sinasc_2 a frequência das categorias das seguintes variáveis: LOCNASC, ESTCIVMAE, GESTACAO, GRAVIDEZ, PARTO,
