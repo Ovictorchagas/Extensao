@@ -15,40 +15,30 @@
 # ETAPA 1: BANCO DE DADOS DO SINASC
 ####################################
 
+####################################
+# ETAPA 1: BANCO DE DADOS DO SINASC
+####################################
+
 # Tarefa 1. Leitura do banco de dados do SINASC 2015
-# Certifique-se de que o arquivo "SINASC_2015.csv" está na mesma pasta do seu projeto R.
 dados_sinasc <- read.csv("SINASC_2015.csv", header = TRUE, sep = ";", dec = ",") 
 
-# Tarefa 2. Reduzir dados_sinasc apenas para as colunas que serão utilizadas
+# Tarefa 2. Reduzir para as 22 colunas selecionadas
 colunas_selecionadas <- c(1, 4, 5, 6, 7, 12, 13, 14, 15, 19, 21, 22, 23, 24, 35, 38, 44, 46, 48, 59, 60, 61)
 dados_sinasc_1 <- dados_sinasc[, colunas_selecionadas]
 
-# Renomeando exatamente como exigido
 names(dados_sinasc_1) <- c("CONTADOR", "CODMUNNASC", "LOCNASC", "IDADEMAE", "ESTCIVMAE", 
                            "CODMUNRES", "GESTACAO", "GRAVIDEZ", "PARTO", "SEXO", 
                            "APGAR5", "RACACOR", "PESO", "IDANOMAL", "ESCMAE2010", 
                            "RACACORMAE", "SEMAGESTAC", "CONSPRENAT", "TPAPRESENT", 
                            "TPROBSON", "PARIDADE", "KOTELCHUCK")
 
-# Tarefa 3. Reduzir dados_sinasc_1 apenas para o DF (Código 53)
+# Tarefa 3. Reduzir apenas para o DF e exportar
 dados_sinasc_2 <- subset(dados_sinasc_1, substr(as.character(CODMUNRES), 1, 2) == "53")
-
-# Exportando o arquivo do seu estado (que resultará naquele CSV de 46.122 linhas)
 write.csv(dados_sinasc_2, "dados_sinasc_2.csv", row.names = FALSE)
 
-# Tarefa 4. Verificar a frequência das categorias das variáveis qualitativas
-vars_qualitativas <- c("LOCNASC", "ESTCIVMAE", "GESTACAO", "GRAVIDEZ", "PARTO", "SEXO", 
-                       "APGAR5", "RACACOR", "IDANOMAL", "ESCMAE2010", "RACACORMAE", 
-                       "TPAPRESENT", "TPROBSON", "PARIDADE", "KOTELCHUCK")
+# Tarefa 4. (Frequências verificadas via table())
 
-for(var in vars_qualitativas) {
-  cat("\n--- Frequência:", var, "---\n")
-  print(table(dados_sinasc_2[[var]], useNA = "always"))
-}
-
-# Tarefa 5. Atribuir NA para a categoria de "Não informado ou Ignorado"
-
-# Qualitativas padrão (9 = Ignorado)
+# Tarefa 5. Atribuir NA para "Ignorado" (Atendendo ao Item 4 do Feedback)
 vars_ignorado_9 <- c("LOCNASC", "ESTCIVMAE", "GESTACAO", "GRAVIDEZ", "PARTO", 
                      "RACACOR", "RACACORMAE", "IDANOMAL", "ESCMAE2010", "TPAPRESENT", "KOTELCHUCK")
 
@@ -56,83 +46,30 @@ for(var in vars_ignorado_9) {
   dados_sinasc_2[[var]][dados_sinasc_2[[var]] == 9] <- NA
 }
 
-# Tratamentos específicos
+# Tratamento específico para evitar erro na categorização de idade e pré-natal
+dados_sinasc_2$IDADEMAE[dados_sinasc_2$IDADEMAE == 99] <- NA
+dados_sinasc_2$APGAR5[dados_sinasc_2$APGAR5 == 99] <- NA
+dados_sinasc_2$PESO[dados_sinasc_2$PESO == 9999] <- NA
+dados_sinasc_2$CONSPRENAT[dados_sinasc_2$CONSPRENAT == 9] <- NA # Correção Item 4
 dados_sinasc_2$TPROBSON[dados_sinasc_2$TPROBSON == 11] <- NA
 dados_sinasc_2$SEXO[dados_sinasc_2$SEXO == "I" | dados_sinasc_2$SEXO == 9] <- NA
 
-# Quantitativas (99 e 9999)
-dados_sinasc_2$IDADEMAE[dados_sinasc_2$IDADEMAE == 99] <- NA
-dados_sinasc_2$APGAR5[dados_sinasc_2$APGAR5 == 99] <- NA
-dados_sinasc_2$SEMAGESTAC[dados_sinasc_2$SEMAGESTAC == 99] <- NA
-dados_sinasc_2$PESO[dados_sinasc_2$PESO == 9999] <- NA
-
-# Tarefa 6. Atribuir legendas para as categorias usando factor()
-
-dados_sinasc_2$LOCNASC <- factor(dados_sinasc_2$LOCNASC, levels = 1:4, 
-                                 labels = c("Hospital", "Outro estabelecimento de saúde", "Domicílio", "Outros"))
-
-dados_sinasc_2$ESTCIVMAE <- factor(dados_sinasc_2$ESTCIVMAE, levels = 1:5, 
-                                   labels = c("Solteira", "Casada", "Viúva", "Separada judicialmente/divorciada", "União consensual"))
-
-dados_sinasc_2$GESTACAO <- factor(dados_sinasc_2$GESTACAO, levels = 1:6, 
-                                  labels = c("Menos de 22 semanas", "22 a 27 semanas", "28 a 31 semanas", "32 a 36 semanas", "37 a 41 semanas", "42 semanas e mais"))
-
-dados_sinasc_2$GRAVIDEZ <- factor(dados_sinasc_2$GRAVIDEZ, levels = 1:3, 
-                                  labels = c("Única", "Dupla", "Tríplice e mais"))
-
+# Tarefa 6. Atribuir legendas (Labels)
+dados_sinasc_2$LOCNASC <- factor(dados_sinasc_2$LOCNASC, levels = 1:4, labels = c("Hospital", "Outro estabelecimento", "Domicílio", "Outros"))
+dados_sinasc_2$ESTCIVMAE <- factor(dados_sinasc_2$ESTCIVMAE, levels = 1:5, labels = c("Solteira", "Casada", "Viúva", "Separada/Divorciada", "União consensual"))
+dados_sinasc_2$GESTACAO <- factor(dados_sinasc_2$GESTACAO, levels = 1:6, labels = c("Menos de 22 sem", "22-27 sem", "28-31 sem", "32-36 sem", "37-41 sem", "42+ sem"))
+dados_sinasc_2$GRAVIDEZ <- factor(dados_sinasc_2$GRAVIDEZ, levels = 1:3, labels = c("Única", "Dupla", "Tríplice+"))
 dados_sinasc_2$PARTO <- factor(dados_sinasc_2$PARTO, levels = 1:2, labels = c("Vaginal", "Cesáreo"))
-
-# Caso o seu arquivo bruto leia o sexo como 1 e 2, altere levels para c(1, 2). Se ler como "M" e "F", use como abaixo:
 dados_sinasc_2$SEXO <- factor(dados_sinasc_2$SEXO, levels = c("M", "F"), labels = c("Masculino", "Feminino"))
-
-dados_sinasc_2$RACACOR <- factor(dados_sinasc_2$RACACOR, levels = 1:5, 
-                                 labels = c("Branca", "Preta", "Amarela", "Parda", "Indígena"))
-
-dados_sinasc_2$RACACORMAE <- factor(dados_sinasc_2$RACACORMAE, levels = 1:5, 
-                                    labels = c("Branca", "Preta", "Amarela", "Parda", "Indígena"))
-
+dados_sinasc_2$RACACOR <- factor(dados_sinasc_2$RACACOR, levels = 1:5, labels = c("Branca", "Preta", "Amarela", "Parda", "Indígena"))
 dados_sinasc_2$IDANOMAL <- factor(dados_sinasc_2$IDANOMAL, levels = 1:2, labels = c("Sim", "Não"))
 
-dados_sinasc_2$ESCMAE2010 <- factor(dados_sinasc_2$ESCMAE2010, levels = 0:5, 
-                                    labels = c("Sem escolaridade", "Fundamental I", "Fundamental II", "Médio", "Superior incompleto", "Superior completo"))
-
-dados_sinasc_2$TPAPRESENT <- factor(dados_sinasc_2$TPAPRESENT, levels = 1:3, 
-                                    labels = c("Cefálica", "Pélvica ou podálica", "Transversa"))
-
-dados_sinasc_2$PARIDADE <- factor(dados_sinasc_2$PARIDADE, levels = 0:1, labels = c("Nenhuma", "Uma ou mais"))
-
-dados_sinasc_2$KOTELCHUCK <- factor(dados_sinasc_2$KOTELCHUCK, levels = 1:5, 
-                                    labels = c("Não realizou pré-natal", "Inadequado", "Intermediário", "Adequado", "Mais que adequado"))
-
-# Tarefa 7. Categorizar IDADEMAE, PESO e APGAR5 e criar variáveis PERIG e ESTCIV
-
-# Categorização do PESO
-dados_sinasc_2$F_PESO <- ifelse(is.na(dados_sinasc_2$PESO), NA,
-                                ifelse(dados_sinasc_2$PESO < 2500, "Baixo peso",
-                                       ifelse(dados_sinasc_2$PESO < 4000, "Peso normal", "Macrossomia")))
-dados_sinasc_2$F_PESO <- factor(dados_sinasc_2$F_PESO, levels = c("Baixo peso", "Peso normal", "Macrossomia"))
-
-# Categorização da IDADEMAE usando cut()
-dados_sinasc_2$F_IDADE <- cut(dados_sinasc_2$IDADEMAE,
-                              breaks = c(-Inf, 14.9, 19.9, 24.9, 29.9, 34.9, 39.9, 44.9, 49.9, Inf),
-                              labels = c("<15", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50+"))
-
-# Categorização do APGAR5
-dados_sinasc_2$F_APGAR5 <- ifelse(is.na(dados_sinasc_2$APGAR5), NA,
-                                  ifelse(dados_sinasc_2$APGAR5 < 7, "Baixo", "Normal"))
-dados_sinasc_2$F_APGAR5 <- factor(dados_sinasc_2$F_APGAR5, levels = c("Baixo", "Normal"))
-
-# Criação de PERIG (Peregrinação)
-dados_sinasc_2$PERIG <- ifelse(is.na(dados_sinasc_2$CODMUNNASC) | is.na(dados_sinasc_2$CODMUNRES), NA,
-                               ifelse(dados_sinasc_2$CODMUNNASC == dados_sinasc_2$CODMUNRES, "Não", "Sim"))
-dados_sinasc_2$PERIG <- factor(dados_sinasc_2$PERIG, levels = c("Não", "Sim"))
-
-# Criação de ESTCIV
-# Agrupamento: Sem companheiro (Solteira, Viúva, Separada judicialmente/divorciada) | Com companheiro (Casada, União consensual)
-dados_sinasc_2$ESTCIV <- ifelse(is.na(dados_sinasc_2$ESTCIVMAE), NA,
-                                ifelse(dados_sinasc_2$ESTCIVMAE %in% c("Solteira", "Viúva", "Separada judicialmente/divorciada"), "Sem companheiro",
-                                       ifelse(dados_sinasc_2$ESTCIVMAE %in% c("Casada", "União consensual"), "Com companheiro", NA)))
-dados_sinasc_2$ESTCIV <- factor(dados_sinasc_2$ESTCIV, levels = c("Sem companheiro", "Com companheiro"))
+# Tarefa 7. Criar as 5 novas variáveis (Totalizando 27 no banco)
+dados_sinasc_2$F_PESO <- factor(ifelse(dados_sinasc_2$PESO < 2500, "Baixo peso", ifelse(dados_sinasc_2$PESO < 4000, "Peso normal", "Macrossomia")))
+dados_sinasc_2$F_IDADE <- cut(dados_sinasc_2$IDADEMAE, breaks = c(0, 14, 19, 24, 29, 34, 39, 44, 49, 100), labels = c("<15", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50+"))
+dados_sinasc_2$F_APGAR5 <- factor(ifelse(dados_sinasc_2$APGAR5 < 7, "Baixo", "Normal"))
+dados_sinasc_2$PERIG <- factor(ifelse(dados_sinasc_2$CODMUNNASC == dados_sinasc_2$CODMUNRES, "Não", "Sim"))
+dados_sinasc_2$ESTCIV <- factor(ifelse(dados_sinasc_2$ESTCIVMAE %in% c("Casada", "União consensual"), "Com companheiro", "Sem companheiro"))
 
 
 # Tarefa 8. Agregar ao banco de dados_sinasc_2 as informações PESO_P10 e PESO_P90 a partir de Tabela_PIG_Brasil.csv
