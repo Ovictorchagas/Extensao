@@ -149,19 +149,48 @@ dados_sinasc_2$ESTCIV <- factor(ifelse(dados_sinasc_2$ESTCIVMAE %in% c("Casada",
 ##################################
 # ETAPA 2: BANCO DE DADOS DO SIM
 ##################################
-# Só inicie esta Etapa quando a professora orientar
-# ESTANDO NA BRANCH SINASC, NÃO ALTERE NADA NO SCRIPT REFERENTE A ETAPA 2
-
-# Tarefa 1. Leitura do banco de dados Mortalidade_Geral_2015 do SIM 2015 com 1216475 linhas e 87 colunas
+# Tarefa 1. Leitura do banco de dados Mortalidade_Geral_2015 do SIM 2015 com
+# 1216475 linhas e 87 colunas
 # verificar se a leitura foi feita corretamente e a estrutura dos dados
 # nomeie o banco de dados como dados_sim
 
+# Tarefa 2. Reduzir dados_sim apenas para as colunas que serão utilizadas,
+# nomeando este novo banco de dados como dados_sim_1
+# as colunas serão: 1, 3, 4, 8, 9, 10, 11, 14, 17, 35, 36, 37, 47, 77, 84
+# nomes das respectivas variáveis: CONTADOR, TIPOBITO, DTOBITO, DTNASC,
+# IDADE, SEXO, RACACOR, ESC2010, CODMUNRES, TPMORTEOCO, OBITOGRAV,
+# OBITOPUERP, CAUSABAS, TPOBITOCOR, MORTEPARTO
 
-# Tarefa 2. Reduzir dados_sim apenas para as colunas que serão utilizadas, nomeando este novo banco de dados como dados_sim_1
-# as colunas serão (a informar)
-# nomes das respectivas variáveis: CONTADOR, TIPOBITO, CODMUNNATU, IDADE,  SEXO,  RACACOR,  ESTCIV, ESC2010, 
-# CODMUNRES,  LOCOCOR, CODMUNOCOR, TPMORTEOCO,  OBITOGRAV, OBITOPUERP, CAUSABAS, CAUSABAS_O, TPOBITOCOR, MORTEPARTO
+# Tarefa 3. Reduzir dados_sim_1 apenas para o estado que o aluno irá trabalhar
+# (utilizar os dois primeiros dígitos de CODMUNRES), nomeando este novo banco de
+# dados como dados_sim_2
 
+# Tarefa 4. Verificar em dados_sim_2 a frequência das categorias das seguintes: variáveis: TIPOBITO, SEXO, RACACOR, TPMORTEOCO, OBITOGRAV, OBITOPUERP,
+# CAUSABAS, TPOBITOCOR, MORTEPARTO
+
+# Tarefa 5. Atribuir para cada variável de dados_sim_2 como sendo NA a categoria
+# de "Não informado ou Ignorado", geralmente com código 9
+# veja o dicionário do SIM para identificar qual o código das categorias de cada
+# variável. Em variáveis quantitativas como IDADE verificar se existem valores como
+# 99 para NA
+
+# Tarefa 6. Atribuir legendas para as categorias das variáveis qualitativas investigadas na tarefa 4. Exemplo: dados_sim_2$TIPOBITO =
+#factor(dados_sim_2$TIPOBITO, levels = c(1,2), labels = c("Fetal", "Não fetal")
+         
+         # Tarefa 7. Crie um banco de dados, de nome SIM_UF.csv (Exemplo: SIM_RJ.csv),
+         # contendo as 41 variáveis listadas no arquivo “Variáveis - Projeto - Tarefa 7 da
+         # Etapa 2.pdf”
+         # Atenção:
+         # 1. Para informações gerais utilize CAUSABAS, SEXO e IDADE
+         # 2. Para informações fetais utilize TIPOBITO
+         # 3. Para informações neonatais utilize TIPOBITO não fetal e IDADE entre 0 e 27 dias
+         # e RACACOR
+         # 4. Para informações maternas utilize TPMORTEOCO, ESC e IDADE
+         
+         # Tarefa 8: Exporte o banco de dados com o nome SIM_UF.csv
+         # Ao terminar a ETAPA 2 commite e envie para o repositório REMOTO com o
+         # comentário "Dados da UF e Script Etapa 2"# Faça um merge de script de SIM
+         # para main
 
 
 #####################################################
