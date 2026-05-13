@@ -11,6 +11,7 @@
 # SCRIPT COMPLETO - ETAPA 1: BANCO DE DADOS DO SINASC (Tarefas 1 a 11)
 #########################################################################
 library(dplyr)
+library(stringr)
 
 # =====================================================================
 # Tarefa 1. Leitura do banco original do SINASC 2015
@@ -485,27 +486,92 @@ write.csv(SIM_DF, "SIM_DF.csv", row.names = FALSE)
 # Abra um branch OUTROS
 # Na branch OUTROS escreva os comandos da Tarefa 1 abaixo
 
+# Carregando pacote necessário para manipulação dos dados
+library(dplyr)
+
 # Tarefa 1. Acesso aos bancos de dados do SIDRA e obtenção da informação
 # Leia os arquivos:
-# 1. população residente estimada - UF e municípios - 2015 - SIDRA - tabela_6579.csv  
-# 2. população residente censo 2010 - UF e municípios - total e por sexo - SIDRA - tabela_1552.csv  
-# 3. população residente censo 2010 - por faixa etária -  UF - SIDRA - tabela_1552.csv
-# 4. população residente censo 2010 - por faixa etária e sexo -  municípios - SIDRA - tabela_1552.csv
+pop_est_2015   <- read.csv("população residente estimada - UF e municípios - 2015 - SIDRA - tabela_6579.csv", sep=";", header=TRUE)
+pop_censo_tot  <- read.csv("população residente censo 2010 - UF e municípios - total e por sexo - SIDRA - tabela_1552.csv", sep=";", header=TRUE)
+pop_idade_uf   <- read.csv("população residente censo 2010 - por faixa etária -  UF - SIDRA - tabela_1552.csv", sep=";", header=TRUE)
+pop_idade_mun  <- read.csv("população residente censo 2010 - por faixa etária e sexo -  municípios - SIDRA - tabela_1552.csv", sep=";", header=TRUE)
 
-# A partir dos arquivos acima gere o banco de dados de nome SIDRA_UF com as seguintes variáveis:
-# 1  ANO    
-# 2  NIVEL
-# 3  CODMUNRES
-# 4 POPRE_T
-# 5 POPRC_T
-# 6 POPRC_M
-# 7 POPRC_F
-# 8 POPRC_15
-# 9 POPRC_15_49
-# 10 POPRC_50
-# 11 POPRC_F_15
-# 12 POPRC_F_15_49
-# 13 POPRC_F_50
+f_15    <- c("0 a 4 anos", "5 a 9 anos", "10 a 14 anos")
+f_15_49 <- c("15 a 19 anos", "20 a 24 anos", "25 a 29 anos", "30 a 34 anos", "35 a 39 anos", "40 a 44 anos", "45 a 49 anos")
+f_50    <- c("50 a 54 anos", "55 a 59 anos", "60 a 64 anos", "65 a 69 anos", "70 a 74 anos", "75 a 79 anos", "80 a 89 anos", "90 a 99 anos", "100 anos ou mais")
+
+
+# Filtrando os bancos de dados
+df_est_uf   <- pop_est_2015 %>% filter(CODMUNRES == 53)
+df_tot_uf   <- pop_censo_tot %>% filter(CODMUNRES == 53)
+df_idade_uf <- pop_idade_uf %>% filter(CODMUNRES == 53)
+
+# Calculando as faixas etárias requeridas (total e por sexo feminino)
+calc_uf <- df_idade_uf %>%
+  summarise(
+    POPRC_15      = sum(POP[F_IDADE %in% f_15], na.rm = TRUE),
+    POPRC_15_49   = sum(POP[F_IDADE %in% f_15_49], na.rm = TRUE),
+    POPRC_50      = sum(POP[F_IDADE %in% f_50], na.rm = TRUE),
+    POPRC_F_15    = sum(POPF[F_IDADE %in% f_15], na.rm = TRUE),
+    POPRC_F_15_49 = sum(POPF[F_IDADE %in% f_15_49], na.rm = TRUE),
+    POPRC_F_50    = sum(POPF[F_IDADE %in% f_50], na.rm = TRUE)
+  )
+
+# Criando a linha de informações do Estado
+linha_uf <- data.frame(
+  ANO           = 2015,
+  NIVEL         = "UF",
+  CODMUNRES     = 53,
+  POPRE_T       = df_est_uf$POPRE_T,
+  POPRC_T       = df_tot_uf$POPRC_T,
+  POPRC_M       = df_tot_uf$POPRC_M,
+  POPRC_F       = df_tot_uf$POPRC_F,
+  POPRC_15      = calc_uf$POPRC_15,
+  POPRC_15_49   = calc_uf$POPRC_15_49,
+  POPRC_50      = calc_uf$POPRC_50,
+  POPRC_F_15    = calc_uf$POPRC_F_15,
+  POPRC_F_15_49 = calc_uf$POPRC_F_15_49,
+  POPRC_F_50    = calc_uf$POPRC_F_50
+)
+
+# Filtrando os bancos de dados
+df_est_mun   <- pop_est_2015 %>% filter(CODMUNRES == 5300108)
+df_tot_mun   <- pop_censo_tot %>% filter(CODMUNRES == 5300108)
+df_idade_mun <- pop_idade_mun %>% filter(CODMUNRES == 5300108)
+
+# Calculando as faixas etárias
+calc_mun <- df_idade_mun %>%
+  summarise(
+    POPRC_15      = sum(POP[F_IDADE %in% f_15], na.rm = TRUE),
+    POPRC_15_49   = sum(POP[F_IDADE %in% f_15_49], na.rm = TRUE),
+    POPRC_50      = sum(POP[F_IDADE %in% f_50], na.rm = TRUE),
+    POPRC_F_15    = sum(POPF[F_IDADE %in% f_15], na.rm = TRUE),
+    POPRC_F_15_49 = sum(POPF[F_IDADE %in% f_15_49], na.rm = TRUE),
+    POPRC_F_50    = sum(POPF[F_IDADE %in% f_50], na.rm = TRUE)
+  )
+
+# Criando a linha de informações do Município
+linha_mun <- data.frame(
+  ANO           = 2015,
+  NIVEL         = "MUNICIPIO",
+  CODMUNRES     = 5300108,
+  POPRE_T       = df_est_mun$POPRE_T,
+  POPRC_T       = df_tot_mun$POPRC_T,
+  POPRC_M       = df_tot_mun$POPRC_M,
+  POPRC_F       = df_tot_mun$POPRC_F,
+  POPRC_15      = calc_mun$POPRC_15,
+  POPRC_15_49   = calc_mun$POPRC_15_49,
+  POPRC_50      = calc_mun$POPRC_50,
+  POPRC_F_15    = calc_mun$POPRC_F_15,
+  POPRC_F_15_49 = calc_mun$POPRC_F_15_49,
+  POPRC_F_50    = calc_mun$POPRC_F_50
+)
+
+# Empilhando as duas linhas em um único banco de dados de nome SIDRA_UF
+SIDRA_UF <- bind_rows(linha_uf, linha_mun)
+
+# Exporte o arquivo em formato CSV
+write.csv(SIDRA_UF, "SIDRA_DF.csv", row.names = FALSE)
 
 #####################################################################################################
 # ETAPA 4: GERAR BANCO DE DADOS FINAL DO ESTADO, BASEADO NAS ANÁLISES DE SINASC, SIM, IBGE, SNIS,...
